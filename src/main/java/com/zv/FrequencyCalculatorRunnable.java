@@ -19,7 +19,7 @@ public class FrequencyCalculatorRunnable implements Runnable {
 	}
 
 	@Override
-	public void run(){
+	public void run() {
 		try (FileInputStream stream = new FileInputStream(this.fileName)) {
 			stream.skip(this.startPosition);
 
@@ -34,11 +34,8 @@ public class FrequencyCalculatorRunnable implements Runnable {
 				}
 			}
 		}
-		catch (FileNotFoundException e) {
-
-		}
-		catch (IOException e) {
-
+		catch (Exception e) {
+			Logger.log(e.getMessage());
 		}
 	}
 }

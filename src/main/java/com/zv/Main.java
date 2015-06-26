@@ -7,26 +7,27 @@ public class Main {
 	private static final int CHARARSET_SIZE = 256;
 
     public static void main(String[] args) {
+		boolean quietMode = false;
 		int threadsCount = 1;
-		String fileName = null;
+		String fileName = "in.txt";
 
 		for (int i = 0; i < args.length; i++) {
 			String arg = args[i];
-			if (arg.equals("-t") || arg.equals("-task")) {
-				threadsCount = Integer.valueOf(args[i + 1]);
+
+			if (arg.equals("-q") || arg.equals("-quiet")) {
+				quietMode = true;
+			}
+			else if (arg.equals("-t") || arg.equals("-tasks")) {
+				threadsCount = Integer.parseInt(args[i + 1]);
 			}
 			else if (arg.equals("-f")) {
 				fileName = args[i + 1];
 			}
 		}
 
-		if (fileName == null) {
-			fileName = "in.txt";
-			//System.exit(1);
-		}
-
-		System.out.println("File name: " + fileName);
-		System.out.println("Threads count: " + threadsCount);
+		Logger.setQuietMode(quietMode);
+		Logger.log("File name: " + fileName);
+		Logger.log("Threads count: " + threadsCount);
 
 		File file = new File(fileName);
 		long fileSize = file.length();
@@ -48,6 +49,8 @@ public class Main {
 				bytesToRead = blockSize;
 			}
 
+			Logger.log(String.format("Starting thread number %d from: %s", (i + 1), blockStart));
+
 			frequencyTables[i] = new FrequencyTable(CHARARSET_SIZE);
 			Runnable runnable = new FrequencyCalculatorRunnable(fileName, blockStart, bytesToRead, frequencyTables[i]);
 			threads[i] = new Thread(runnable);
@@ -58,23 +61,24 @@ public class Main {
 		for (int i = 0; i < threadsCount; i++) {
 			try {
 				threads[i].join();
+				Logger.log("Accumulating thread number " + (i + 1));
 				for (FrequencyEntry entry : frequencyTables[i]) {
 					resultTable.addItem(entry.getKey(), entry.getValue());
 				}
 
 			}
 			catch (InterruptedException e) {
-
+				Logger.log(e.getMessage());
 			}
 		}
 
 		for (FrequencyEntry entry : resultTable) {
 			char key = (char)entry.getKey();
-			System.out.println(key + " " + entry.getValue());
+			Logger.log(key + " " + entry.getValue());
 		}
 
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		System.out.println(totalTime);
+		Logger.forceLog("Total time: " + (totalTime / 1000));
 	}
 }
