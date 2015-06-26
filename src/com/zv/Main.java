@@ -49,7 +49,7 @@ public class Main {
 				bytesToRead = blockSize;
 			}
 
-			Logger.log(String.format("Starting thread number %d from: %s", (i + 1), blockStart));
+			Logger.log(String.format("Starting thread number %d from position %s", (i + 1), blockStart));
 
 			frequencyTables[i] = new FrequencyTable(CHARARSET_SIZE);
 			Runnable runnable = new FrequencyCalculatorRunnable(fileName, blockStart, bytesToRead, frequencyTables[i]);
