@@ -4,7 +4,7 @@ import java.io.File;
 
 public class Main {
 
-	private static final int CHARARSET_SIZE = 256;
+    private static final int CHARARSET_SIZE = 256;
 
     public static void main(String[] args) {
 		boolean quietMode = false;
@@ -49,7 +49,7 @@ public class Main {
 				bytesToRead = blockSize;
 			}
 
-			Logger.log(String.format("Starting thread number %d from: %s", (i + 1), blockStart));
+			Logger.log(String.format("Starting thread number %d from position %s", (i + 1), blockStart));
 
 			frequencyTables[i] = new FrequencyTable(CHARARSET_SIZE);
 			Runnable runnable = new FrequencyCalculatorRunnable(fileName, blockStart, bytesToRead, frequencyTables[i]);
@@ -60,6 +60,7 @@ public class Main {
 		FrequencyTable resultTable = new FrequencyTable(CHARARSET_SIZE);
 		for (int i = 0; i < threadsCount; i++) {
 			try {
+				Logger.log("Waiting for thread number " + (i + 1) + " to finish");
 				threads[i].join();
 				Logger.log("Accumulating thread number " + (i + 1));
 				for (FrequencyEntry entry : frequencyTables[i]) {
@@ -79,6 +80,6 @@ public class Main {
 
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		Logger.forceLog("Total time: " + (totalTime / 1000));
+		Logger.forceLog(String.format("Total time: %d seconds", totalTime / 1000));
 	}
 }
