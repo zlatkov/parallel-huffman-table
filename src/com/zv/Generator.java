@@ -10,7 +10,7 @@ public class Generator {
 	public static void main(String[] args) throws IOException{
 		try (PrintWriter writer = new PrintWriter("in.txt", "UTF-8")) {
 			for (int i = 0; i < 500000; i++) {
-				writer.write("malemalelelezkodsaoiojlkjkdflsjkj34290");
+				writer.write("abeasdiasd8as90d8asdioasdasj89089dkasklkj");
 			}
 		}
 	}

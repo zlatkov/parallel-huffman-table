@@ -1,6 +1,8 @@
 package com.zv;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -32,8 +34,7 @@ public class Main {
 
 		long startTime = System.currentTimeMillis();
 
-		Thread[] threads = new Thread[threadsCount];
-		FrequencyTable[] frequencyTables = new FrequencyTable[threadsCount];
+		List<MapTask> tasks = new ArrayList<>(threadsCount);
 
 		for (int i = 0; i < threadsCount; i++) {
 			long blockStart = i * blockSize;
@@ -45,24 +46,31 @@ public class Main {
 				bytesToRead = blockSize;
 			}
 
-			Logger.log(String.format("Starting thread number %d from position %s", (i + 1), blockStart));
+			if (blockStart < fileSize) {
+				Logger.log(String.format("Starting thread number %d from position %s", (i + 1), blockStart));
 
-			frequencyTables[i] = new FrequencyTable(CHARARSET_SIZE);
-			Runnable runnable = new FrequencyCalculatorRunnable(fileName, blockStart, bytesToRead, frequencyTables[i]);
-			threads[i] = new Thread(runnable);
-			threads[i].start();
+				MapTask task = new MapTask(fileName, blockStart, bytesToRead, CHARARSET_SIZE);
+				tasks.add(task);
+
+				task.start();
+			}
+			else {
+				break;
+			}
 		}
 
 		FrequencyTable resultTable = new FrequencyTable(CHARARSET_SIZE);
-		for (int i = 0; i < threadsCount; i++) {
+		for (int i = 0; i < tasks.size(); i++) {
 			try {
+				MapTask task = tasks.get(i);
+
 				Logger.log("Waiting for thread number " + (i + 1) + " to finish");
 
-				threads[i].join();
+				task.join();
 
 				Logger.log("Accumulating thread number " + (i + 1));
 
-				for (FrequencyEntry entry : frequencyTables[i]) {
+				for (FrequencyEntry entry : task.getFrequencyTable()) {
 					resultTable.addItem(entry.getKey(), entry.getValue());
 				}
 
