@@ -7,25 +7,19 @@ public class Main {
     private static final int CHARARSET_SIZE = 256;
 
     public static void main(String[] args) {
-		boolean quietMode = false;
-		int threadsCount = 1;
-		String fileName = "in.txt";
+		CommandLineArguments arguments = new CommandLineArguments(args);
 
-		for (int i = 0; i < args.length; i++) {
-			String arg = args[i];
+		Logger.setQuietMode(arguments.getIsQuietMode());
 
-			if (arg.equals("-q") || arg.equals("-quiet")) {
-				quietMode = true;
-			}
-			else if (arg.equals("-t") || arg.equals("-tasks")) {
-				threadsCount = Integer.parseInt(args[i + 1]);
-			}
-			else if (arg.equals("-f")) {
-				fileName = args[i + 1];
-			}
+		String fileName = arguments.getFileName();
+		int threadsCount = arguments.getThreadsCount();
+
+		if (fileName == null) {
+			Logger.log("Missing file name.");
+
+			System.exit(1);
 		}
 
-		Logger.setQuietMode(quietMode);
 		Logger.log("File name: " + fileName);
 		Logger.log("Threads count: " + threadsCount);
 
@@ -33,6 +27,8 @@ public class Main {
 		long fileSize = file.length();
 
 		long blockSize = Math.max(fileSize / threadsCount, 1);
+
+		Logger.log("Block size: " + blockSize);
 
 		long startTime = System.currentTimeMillis();
 
@@ -61,8 +57,11 @@ public class Main {
 		for (int i = 0; i < threadsCount; i++) {
 			try {
 				Logger.log("Waiting for thread number " + (i + 1) + " to finish");
+
 				threads[i].join();
+
 				Logger.log("Accumulating thread number " + (i + 1));
+
 				for (FrequencyEntry entry : frequencyTables[i]) {
 					resultTable.addItem(entry.getKey(), entry.getValue());
 				}
@@ -75,11 +74,13 @@ public class Main {
 
 		for (FrequencyEntry entry : resultTable) {
 			char key = (char)entry.getKey();
+
 			Logger.log(key + " " + entry.getValue());
 		}
 
 		long endTime   = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
-		Logger.forceLog(String.format("Total time: %d seconds", totalTime / 1000));
+
+		Logger.forceLog(String.format("Total time: %d milliseconds", totalTime));
 	}
 }
